@@ -1,6 +1,6 @@
 class Movie < ActiveRecord::Base
     def self.all_ratings
-        return ["G", "PG", "PG-13", "R"]
+        return self.select("DISTINCT rating").map(&:rating)
     end
-    
+
 end

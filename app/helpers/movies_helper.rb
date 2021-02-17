@@ -4,11 +4,11 @@ module MoviesHelper
     count.odd? ?  "odd" :  "even"
   end
   def sort_method(column)
-    column2 = (column == "Movie Title")? "title":"release_date"
-    dir = (column2 == sort_column && sort_dir == "asc")? "desc":"asc"
+    columnLowerCase = (column == "Movie Title")? "title":"release_date"
+    dir = (columnLowerCase == sortingColumn && sortingDirection == "asc")? "desc":"asc"
     
     header = ""
-    if column2 == "title"
+    if columnLowerCase == "title"
       header = "title_header"
     else
       header = "release_date_header"

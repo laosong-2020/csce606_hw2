@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-  helper_method :sort_dir, :sort_column
+  helper_method :sortingDirection, :sortingColumn
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -7,37 +7,56 @@ class MoviesController < ApplicationController
   end
 
   def index
+    #sortingColumn: "title " or "release_date"
+    #sortingDirection: "asc" or "desc"
+    if session[:column] == nil or (params[:column] != nil and session[:column] != sortingColumn)
+      session[:column] = sortingColumn
+    end
+    if session[:dir] == nil or (params[:dir] != nil and session[:dir] != sortingDirection)
+      session[:dir] = sortingDirection
+    end
+    
+    if session[:ratings].blank? or params[:commit] != nil
+      session[:ratings] = boxChecked
+    end
+
     @movies = Movie.all
     @all_ratings = Movie.all_ratings
     @ratings_to_show = @all_ratings
+    @checked_boxes = session[:ratings]
 
-    if params[:ratings] == nil
-      @rating_list = @all_ratings
-      @movies = Movie.all
-    else
-      @rating_list = params[:ratings].keys
-      @movies = Movie.where({rating: @rating_list})
-    end
-
-    @movie_table = @movies.pluck()
-    @rating_array = []
-    @movie_table.each do |m_table|
-      @rating_array << m_table[2]
-    end
-    @ratings_to_show = @rating_array.uniq
-    if sort_dir != ""
-      @movies = @movies.order("#{sort_column} #{sort_dir}").all
-      if sort_column == "title"
+    if session[:dir] != ""
+      if @checked_boxes.empty?
+        @movies = Movie.order("#{session[:column]} #{session[:dir]}").all
+      else
+        @movies = Movie.order("#{session[:column]} #{session[:dir]}").select {|i| @checked_boxes.include?(i.rating)? true: false}
+      end
+      if session[:column] == "title"
         @MovieTitleClass = "hilite"
         @ReleaseDateClass = ""
-      else
+      elsif session[:column] == "release_date"
         @MovieTitleClass = ""
         @ReleaseDateClass = "hilite"
+      else
+        @MovieTitleClass = ""
+        @ReleaseDateClass = ""
       end
     else
+      if @checked_boxes.empty?
+        @movies = Movie.all
+      else
+        @movies = Movie.all.select{|i| @checked_boxes.include?(i.rating)? true: false}
+      end
       @MovieTitleClass = ""
       @ReleaseDateClass = ""
     end
+    @rating_array = []
+    @movies.each do |m_table|
+      @rating_array << m_table[:rating]
+    end
+    @movies = @movies.uniq
+    @ratings_to_show = @rating_array.uniq
+  
   end
 
   def new
@@ -75,7 +94,7 @@ class MoviesController < ApplicationController
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
 
-  def sort_dir
+  def sortingDirection
     if params[:dir] == "asc"
       return "asc"
     elsif params[:dir] == "desc"
@@ -85,7 +104,7 @@ class MoviesController < ApplicationController
     end
   end
 
-  def sort_column
+  def sortingColumn
     if params[:column] == "Movie Title"
       return "title"
     elsif params[:column] == "Release Date"
@@ -93,5 +112,13 @@ class MoviesController < ApplicationController
     else
       return "title"
     end
+  end
+
+  private def boxChecked
+    #read from params  to fill in cookies
+    if params[:ratings] == nil
+      return []
+    end
+    return params[:ratings]
   end
 end
