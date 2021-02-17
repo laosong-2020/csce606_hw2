@@ -7,13 +7,24 @@ class MoviesController < ApplicationController
   end
 
   def index
-    #@movies = Movie.with_ratings(params[:ratings])
-    @rating_list = params[:ratings].keys
-    @movies = Movie.where({rating: @rating_list})
-    #print rating_list
+    @movies = Movie.all
     @all_ratings = Movie.all_ratings
     @ratings_to_show = @all_ratings
 
+    if params[:ratings] == nil
+      @rating_list = @all_ratings
+      @movies = Movie.all
+    else
+      @rating_list = params[:ratings].keys
+      @movies = Movie.where({rating: @rating_list})
+    end
+
+    @movie_table = @movies.pluck()
+    @rating_array = []
+    @movie_table.each do |m_table|
+      @rating_array << m_table[2]
+    end
+    @ratings_to_show = @rating_array.uniq
     
   end
 
