@@ -15,9 +15,13 @@
 <table class="table table-striped col-md-12" id="movies">
   <thead>
     <tr>
-      <th>Movie Title</th>
+      <th class="<%= @MovieTitleClass %>">
+        <%= sort_method "Movie Title" %>
+      </th>
       <th>Rating</th>
-      <th>Release Date</th>
+      <th class="<%= @ReleaseDateClass %>">
+        <%= sort_method "Release Date" %>
+      </th>
       <th>More Info</th>
     </tr>
   </thead>

@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-
+  helper_method :sort_dir, :sort_column
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -25,7 +25,19 @@ class MoviesController < ApplicationController
       @rating_array << m_table[2]
     end
     @ratings_to_show = @rating_array.uniq
-    
+    if sort_dir != ""
+      @movies = @movies.order("#{sort_column} #{sort_dir}").all
+      if sort_column == "title"
+        @MovieTitleClass = "hilite"
+        @ReleaseDateClass = ""
+      else
+        @MovieTitleClass = ""
+        @ReleaseDateClass = "hilite"
+      end
+    else
+      @MovieTitleClass = ""
+      @ReleaseDateClass = ""
+    end
   end
 
   def new
@@ -61,5 +73,25 @@ class MoviesController < ApplicationController
   # This helps make clear which methods respond to requests, and which ones do not.
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
+  end
+
+  def sort_dir
+    if params[:dir] == "asc"
+      return "asc"
+    elsif params[:dir] == "desc"
+      return "desc"
+    else
+      return ""
+    end
+  end
+
+  def sort_column
+    if params[:column] == "Movie Title"
+      return "title"
+    elsif params[:column] == "Release Date"
+      return "release_date"
+    else
+      return "title"
+    end
   end
 end
